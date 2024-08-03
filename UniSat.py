@@ -5,10 +5,12 @@ import base64
 import uuid
 
 import requests
-import bit
 import hashlib
 from urllib.parse import urlencode
 
+from bitcoinlib.wallets import Wallet
+from bitcoinlib.keys import Key
+from bitcoinlib.transactions import Transaction
 
 class UniSat:
 
@@ -70,7 +72,7 @@ class UniSat:
 
         print(data)
 
-    def inscribe_mint(self, tick: str, fee_rate: int, amount: int):
+    def inscribe_mint(self, tick: str, fee_rate: int, amount: int, sats_in_item: int = 546):
         filename = {"p":"brc-20","op":"mint","tick":tick,"amt":str(amount)}
         params = {
             "files": [
@@ -81,7 +83,7 @@ class UniSat:
             ],
             "receiver": self.btc_address,
             "feeRate": fee_rate,
-            "outputValue": 546,
+            "outputValue": sats_in_item,
             "clientId": self.client_id
         }
 
@@ -101,7 +103,7 @@ class UniSat:
         
         print('done, tx id', tx)
 
-    def rune_mint(self, rune_name: str, fee_rate: int, count: int):
+    def rune_mint(self, rune_name: str, fee_rate: int, count: int, sats_in_item: int = 546):
         rune_data = self.__get_rune_info(rune_name=rune_name)
 
         if not rune_data["data"]:
@@ -111,7 +113,7 @@ class UniSat:
         params = {
             "receiver": self.btc_address,
             "feeRate": fee_rate,
-            "outputValue": 546,
+            "outputValue": sats_in_item,
             "clientId": self.client_id,
             "runeId": rune_data["data"]["runeid"],
             "count": count
@@ -269,13 +271,22 @@ class UniSat:
 
         return data
 
-    def __get_btc_address(self) -> str:
-        k = bit.PrivateKey(self.btc_private_key)
-
-        address = k.segwit_address
-
-        print(address)
-        return address
-
     def __send_btc(self, destination: str, amount: int, fee: int) -> str:
-        pass
+        key = Key(self.btc_private_key, network="bitcoin")
+        
+        wallet = Wallet.create('temp_wallet', keys=key, network="bitcoin")
+        
+        wallet.scan()
+        
+        if wallet.balance() < amount + fee:
+            raise ValueError("Not Enough BTC to send tx")
+        
+        t = wallet.send_to(to_address=destination, amount=amount, fee=fee)
+        
+        t.send()
+        
+        wallet.delete_wallet()
+
+        tx_id = t.txid
+
+        return tx_id
