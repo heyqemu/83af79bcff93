@@ -7,6 +7,7 @@ import uuid
 import requests
 import hashlib
 from urllib.parse import urlencode
+from secrets import token_urlsafe
 
 from bitcoinlib.wallets import Wallet
 from bitcoinlib.keys import Key
@@ -225,7 +226,6 @@ class UniSat:
         if not self.testnet and self.ts:
             headers["X-Front-Version"] = str(self.front_version)
 
-        print(headers)
         return headers
 
     def __get_api_urls(self) -> object:
@@ -272,8 +272,9 @@ class UniSat:
         return data
 
     def __send_btc(self, destination: str, amount: int, fee: int) -> str:
+        temp_wallet_name = token_urlsafe(6)
         key = Key(self.btc_private_key, network="bitcoin")
-        wallet = Wallet.create('temp_wallet', keys=key, network="bitcoin")
+        wallet = Wallet.create(temp_wallet_name, keys=key, network="bitcoin")
         wallet.scan()
         
         if wallet.balance() < amount + fee:

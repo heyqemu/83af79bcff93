@@ -11,7 +11,8 @@ us = UniSat(
     btc_private_key=private_key, 
     btc_wallet_address=address, 
     btc_tx_fee=tx_fee, 
-    user_agent=user_agent)
+    user_agent=user_agent
+    )
 
 us.inscribe_mint(tick='zzzz', fee_rate=tx_fee, amount=1)
 
