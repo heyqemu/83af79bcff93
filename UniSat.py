@@ -273,16 +273,13 @@ class UniSat:
 
     def __send_btc(self, destination: str, amount: int, fee: int) -> str:
         key = Key(self.btc_private_key, network="bitcoin")
-        
         wallet = Wallet.create('temp_wallet', keys=key, network="bitcoin")
-        
         wallet.scan()
         
         if wallet.balance() < amount + fee:
             raise ValueError("Not Enough BTC to send tx")
         
         t = wallet.send_to(to_address=destination, amount=amount, fee=fee)
-        
         t.send()
         
         wallet.delete_wallet()
