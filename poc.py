@@ -2,20 +2,16 @@ from UniSat import UniSat
 
 private_key = ""
 address = ""
-proxy = ""
 user_agent = ""
 
 tx_fee = 7
 
 us = UniSat(
-    testnet=True, 
+    testnet=False, 
     btc_private_key=private_key, 
     btc_wallet_address=address, 
     btc_tx_fee=tx_fee, 
-    user_agent=user_agent, 
-    proxy=proxy)
-
-us.get_config()
+    user_agent=user_agent)
 
 us.inscribe_mint(tick='zzzz', fee_rate=tx_fee, amount=1)
 
